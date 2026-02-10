@@ -3,52 +3,209 @@ import { DocumentFile, Column } from '../types';
 // Sample columns pre-configured for the Side Letter dataset
 export const SAMPLE_COLUMNS: Column[] = [
   {
-    id: 'col_sample_investor',
-    name: 'Investor Entity',
-    type: 'text',
-    prompt: 'Identify the full legal name of the Investor entity.',
-    status: 'idle',
-    width: 250
-  },
-  {
-    id: 'col_sample_date',
-    name: 'Date',
-    type: 'date',
-    prompt: 'What is the date of the letter agreement?',
-    status: 'idle',
-    width: 250
-  },
-  {
-    id: 'col_sample_commitment',
-    name: 'Commitment Amount',
-    type: 'number',
-    prompt: 'Return as a number the commitment amount of the investor as shown in the side letter.',
-    status: 'idle',
-    width: 250
-  },
-  {
-    id: 'col_sample_mfn',
-    name: 'MFN',
+    id: 'col_proc_auto_renewal',
+    name: 'Auto-Renewal',
     type: 'boolean',
-    prompt: 'Is there a Most Favored Nation (MFN) clause?',
+    prompt: 'Does the agreement automatically renew?',
     status: 'idle',
-    width: 200
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
   },
   {
-    id: 'col_sample_coinvest',
-    name: 'Co-Investment Rights',
-    type: 'text',
-    prompt: 'Extract the full text of the Co-Investment clause.',
+    id: 'col_proc_term_convenience',
+    name: 'Termination for Convenience',
+    type: 'boolean',
+    prompt: 'Can the Customer terminate for convenience?',
     status: 'idle',
-    width: 350
+    width: 250,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
   },
   {
-    id: 'col_sample_poa',
-    name: 'Power of Attorney',
-    type: 'text',
-    prompt: 'Extract the full text of the Power of Attorney clause.',
+    id: 'col_proc_audit_rights',
+    name: 'Audit Rights',
+    type: 'boolean',
+    prompt: 'Does the Vendor have the right to audit the Customer?',
     status: 'idle',
-    width: 350
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_data_ownership',
+    name: 'Data Ownership',
+    type: 'boolean',
+    prompt: 'Does the Customer own all data processed by the Vendor?',
+    status: 'idle',
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_ip_indemnification',
+    name: 'IP Indemnification',
+    type: 'boolean',
+    prompt: 'Does the Vendor indemnify the Customer for IP infringement claims?',
+    status: 'idle',
+    width: 250,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_cap_liability',
+    name: 'Cap on Liability',
+    type: 'boolean',
+    prompt: 'Is there a cap on the Vendor\'s liability?',
+    status: 'idle',
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_non_solicit',
+    name: 'Non-Solicitation',
+    type: 'boolean',
+    prompt: 'Is the Customer restricted from hiring Vendor employees?',
+    status: 'idle',
+    width: 250,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_insurance',
+    name: 'Insurance',
+    type: 'boolean',
+    prompt: 'Is the Vendor required to maintain insurance coverage?',
+    status: 'idle',
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_dispute_resolution',
+    name: 'Dispute Resolution',
+    type: 'boolean',
+    prompt: 'Is arbitration mandatory for dispute resolution?',
+    status: 'idle',
+    width: 250,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_proc_assignment',
+    name: 'Assignment',
+    type: 'boolean',
+    prompt: 'Can the Customer assign the contract to an affiliate without consent?',
+    status: 'idle',
+    width: 250,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  // SMT VALIDATION COLUMNS
+  {
+    id: 'col_term_length',
+    name: 'Term Length (Months)',
+    type: 'number',
+    prompt: 'What is the term length of the contract in months? Extract as a number.',
+    status: 'idle',
+    width: 180,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_notice_period',
+    name: 'Notice Period (Days)',
+    type: 'number',
+    prompt: 'What is the notice period required for termination in days?',
+    status: 'idle',
+    width: 180,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_liability_amount',
+    name: 'Liability Cap Amount',
+    type: 'number',
+    prompt: 'What is the specific amount of the liability cap? Extract as a number (e.g. 1000000).',
+    status: 'idle',
+    width: 200,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_start_date',
+    name: 'Start Date',
+    type: 'date',
+    prompt: 'What is the effective start date of the agreement? Format as YYYY-MM-DD.',
+    status: 'idle',
+    width: 180,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_end_date',
+    name: 'End Date',
+    type: 'date',
+    prompt: 'What is the usage end date or expiration date? Format as YYYY-MM-DD.',
+    status: 'idle',
+    width: 180,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_ownership_pct',
+    name: 'Ownership %',
+    type: 'number',
+    prompt: 'What is the ownership percentage? Extract as a decimal (e.g. 0.25 for 25%).',
+    status: 'idle',
+    width: 150,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
+  },
+  {
+    id: 'col_payment_wire',
+    name: 'Pay by Wire',
+    type: 'boolean',
+    prompt: 'Is payment by wire transfer allowed?',
+    status: 'idle',
+    width: 150,
+    modelConfig: {
+      provider: 'specific',
+      modelId: 'gemini-2.0-flash-exp'
+    }
   }
 ];
 
@@ -479,10 +636,10 @@ export const generateSampleFiles = (): DocumentFile[] => {
     return {
       id: `sample_doc_${index}`,
       name: doc.name,
-      type: "application/pdf", 
-      size: 25000 + Math.floor(Math.random() * 10000), 
+      type: "application/pdf",
+      size: 25000 + Math.floor(Math.random() * 10000),
       content: content,
-      mimeType: "text/plain" 
+      mimeType: "text/plain"
     };
   });
 };

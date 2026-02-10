@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Plus, 
-  Upload, 
-  FileText, 
-  MessageSquare, 
-  X, 
+import {
+  Plus,
+  Upload,
+  FileText,
+  MessageSquare,
+  X,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -36,17 +36,19 @@ import {
   Quote,
   Download,
   Minus,
-  WrapText
+  WrapText,
+  Users,
+  ShieldAlert
 } from 'lucide-react';
 
-export { 
-  Plus, 
-  Upload, 
-  FileText, 
-  MessageSquare, 
-  X, 
+export {
+  Plus,
+  Upload,
+  FileText,
+  MessageSquare,
+  X,
   ChevronRight,
-  ChevronLeft, 
+  ChevronLeft,
   Loader2,
   Search,
   CheckCircle2,
@@ -76,5 +78,7 @@ export {
   Quote,
   Download,
   Minus,
-  WrapText
+  WrapText,
+  Users,
+  ShieldAlert
 };
