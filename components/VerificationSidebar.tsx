@@ -60,9 +60,15 @@ export const VerificationSidebar: React.FC<VerificationSidebarProps> = ({
     }
   }, [isExpanded, cell, decodedContent]);
 
+  const [viewMode, setViewMode] = useState<'text' | 'pdf'>('text');
+
   const handleCitationClick = () => {
     onExpand(true);
-    // Scroll handled by useEffect
+    if (cell?.page && cell.page > 0) {
+      setViewMode('pdf');
+    } else {
+      setViewMode('text');
+    }
   };
 
   // Helper to render text with highlight (HTML/TXT)
@@ -150,6 +156,24 @@ export const VerificationSidebar: React.FC<VerificationSidebarProps> = ({
             </div>
         </div>
 
+        {/* View Toggle */}
+        <div className="px-6 py-2 bg-slate-50 border-b border-slate-200 flex justify-center">
+            <div className="bg-slate-200 p-1 rounded-lg flex items-center gap-1">
+                <button
+                    onClick={() => { setViewMode('text'); onExpand(true); }}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'text' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Extracted Text
+                </button>
+                <button
+                    onClick={() => { setViewMode('pdf'); onExpand(true); }}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'pdf' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Original PDF
+                </button>
+            </div>
+        </div>
+
         {/* Body */}
         {cell && column ? (
             <div className="p-6 flex-1 overflow-y-auto">
@@ -208,20 +232,128 @@ export const VerificationSidebar: React.FC<VerificationSidebarProps> = ({
     </div>
   );
 
-  const renderDocumentPanel = () => (
+  // Create a stable blob URL from stored base64 data for reliable PDF rendering
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfLoadError, setPdfLoadError] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== 'pdf' || !document) {
+      return;
+    }
+
+    setPdfLoadError(false);
+    let url: string | null = null;
+
+    if (document.originalFileBase64) {
+      try {
+        const byteString = atob(document.originalFileBase64);
+        const bytes = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) {
+          bytes[i] = byteString.charCodeAt(i);
+        }
+        const mimeType = document.originalMimeType || 'application/pdf';
+        const blob = new Blob([bytes], { type: mimeType });
+        url = URL.createObjectURL(blob);
+        setPdfBlobUrl(url);
+      } catch (e) {
+        console.error('Failed to create PDF blob URL from stored data:', e);
+        setPdfBlobUrl(document.fileUrl || null);
+      }
+    } else if (document.fileUrl) {
+      setPdfBlobUrl(document.fileUrl);
+    } else {
+      setPdfBlobUrl(null);
+    }
+
+    return () => {
+      if (url && document.originalFileBase64) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [viewMode, document?.id, document?.originalFileBase64, document?.fileUrl]);
+
+  const handlePdfDownload = () => {
+    if (!pdfBlobUrl || !document) return;
+    const a = window.document.createElement('a');
+    a.href = pdfBlobUrl;
+    a.download = document.name;
+    a.click();
+  };
+
+  const renderDocumentPanel = () => {
+    if (viewMode === 'pdf') {
+      return (
+        <div className="h-full flex flex-col bg-slate-800 border-l border-slate-200 overflow-hidden relative">
+          {pdfBlobUrl && !pdfLoadError ? (() => {
+            const fragments: string[] = [];
+            if (cell?.page && cell.page > 0) {
+              fragments.push(`page=${cell.page}`);
+            }
+            if (cell?.quote) {
+              const cleanQuote = cell.quote.replace(/\s+/g, ' ').trim().substring(0, 100);
+              if (cleanQuote) {
+                fragments.push(`search="${encodeURIComponent(cleanQuote)}"`);
+              }
+            }
+            const hash = fragments.length > 0 ? `#${fragments.join('&')}` : '';
+            const fullUrl = `${pdfBlobUrl}${hash}`;
+
+            return (
+              <object
+                key={`${document?.id}-${hash}`}
+                data={fullUrl}
+                type="application/pdf"
+                className="w-full h-full border-0"
+                title="Original PDF"
+              >
+                <embed src={fullUrl} type="application/pdf" className="w-full h-full" />
+              </object>
+            );
+          })() : (
+            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center">
+              <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
+              {pdfLoadError ? (
+                <>
+                  <p className="mb-2">Unable to display PDF in browser.</p>
+                  {pdfBlobUrl && (
+                    <button onClick={handlePdfDownload} className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors">
+                      Download PDF Instead
+                    </button>
+                  )}
+                  <p className="text-xs mt-3 text-slate-500">Tip: Switch to "Extracted Text" view to see the document content.</p>
+                </>
+              ) : (
+                <>
+                  <p>Original file not available.</p>
+                  <p className="text-xs mt-2">Only newly uploaded files support PDF view.</p>
+                </>
+              )}
+            </div>
+          )}
+          {pdfBlobUrl && !pdfLoadError && (
+            <div className="absolute top-4 right-4 bg-black/75 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-medium z-10 pointer-events-none">
+              Original PDF View
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
       <div className="h-full flex flex-col bg-slate-100 border-l border-slate-200 overflow-hidden">
-          <div className="flex-1 bg-slate-200 relative flex flex-col min-h-0">
-                <div 
-                    ref={scrollContainerRef}
-                    className="flex-1 overflow-y-auto p-8 md:p-12 scroll-smooth"
-                >
-                    <div className="max-w-[800px] w-full bg-white shadow-lg min-h-[800px] p-8 md:p-12 relative mx-auto text-left">
-                        {renderHighlightedContent()}
-                    </div>
-                </div>
+        <div className="flex-1 bg-slate-200 relative flex flex-col min-h-0">
+          <div
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto p-8 md:p-12 scroll-smooth"
+          >
+            <div className="max-w-[800px] w-full bg-white shadow-lg min-h-[800px] p-8 md:p-12 relative mx-auto text-left">
+              {renderHighlightedContent()}
+            </div>
           </div>
+        </div>
       </div>
-  );
+    );
+  };
 
   if (!document) return null;
 

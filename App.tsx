@@ -60,18 +60,37 @@ const App: React.FC = () => {
     }
   };
 
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const processUploadedFiles = async (fileList: File[]) => {
     setIsConverting(true);
     try {
         const processedFiles: DocumentFile[] = [];
 
         for (const file of fileList) {
+          // Read original file bytes as base64 for reliable PDF viewing later
+          const originalFileBase64 = await readFileAsBase64(file);
+
           // Use local deterministic processor (markitdown style)
           const markdownContent = await processDocumentToMarkdown(file);
-          
+
           // Encode to Base64 to match our storage format (mimicking the sample data structure)
           // This keeps the rest of the app (which expects base64 strings for "content") happy
           const contentBase64 = btoa(unescape(encodeURIComponent(markdownContent)));
+
+          // Create Blob URL for PDF viewing (legacy fallback)
+          const fileUrl = URL.createObjectURL(file);
 
           processedFiles.push({
             id: Math.random().toString(36).substring(2, 9),
@@ -79,6 +98,9 @@ const App: React.FC = () => {
             type: file.type,
             size: file.size,
             content: contentBase64,
+            fileUrl: fileUrl,
+            originalFileBase64: originalFileBase64,
+            originalMimeType: file.type || 'application/pdf',
             mimeType: 'text/markdown' // Force to markdown so the viewer treats it as text
           });
         }

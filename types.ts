@@ -4,6 +4,9 @@ export interface DocumentFile {
   type: string;
   size: number;
   content: string; // Base64 string for PDF/Images, or raw text for TXT
+  fileUrl?: string; // Blob URL for PDF viewing (legacy fallback)
+  originalFileBase64?: string; // Base64 of original file bytes for reliable PDF rendering
+  originalMimeType?: string; // MIME type of the original file (e.g. 'application/pdf')
   mimeType: string;
 }
 
